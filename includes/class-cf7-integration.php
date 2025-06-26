@@ -659,32 +659,14 @@ class WeCoza_CF7_Integration {
             return $schema;
         }
 
-        // Remove enum validation for our dynamic fields
-        if (isset($schema['properties'])) {
-            foreach ($dynamic_field_names as $field_name) {
-                if (isset($schema['properties'][$field_name])) {
-                    // Remove the enum constraint that causes validation failures
-                    if (isset($schema['properties'][$field_name]['enum'])) {
-                        unset($schema['properties'][$field_name]['enum']);
-                        error_log('WeCoza CF7: Removed enum validation for field: ' . $field_name);
-                    }
+        // Note: $schema is a WPCF7_SWV_Schema object, not an array
+        // We cannot directly modify the schema object's internal properties
+        // Instead, we'll rely on our custom enum validation replacement
+        // which removes the default enum rules and adds our own
 
-                    // Keep other validation rules but make them more flexible
-                    if (isset($schema['properties'][$field_name]['type'])) {
-                        // Ensure the field accepts string values (our dynamic values)
-                        $schema['properties'][$field_name]['type'] = 'string';
-                    }
+        error_log('WeCoza CF7: Schema object detected, relying on custom enum validation replacement for dynamic fields: ' . implode(', ', $dynamic_field_names));
 
-                    // Add custom validation pattern that accepts any non-empty value
-                    // This allows our database validation to handle the actual validation
-                    $schema['properties'][$field_name]['pattern'] = '^.+$';
-
-                    error_log('WeCoza CF7: Modified schema for dynamic field: ' . $field_name);
-                }
-            }
-        }
-
-        return $schema;
+        // Return the schema object unchanged - our custom enum validation handles the fix
     }
 
     /**
@@ -805,8 +787,6 @@ class WeCoza_CF7_Integration {
                 error_log('WeCoza CF7: Added enum validation for static field: ' . $field . ' with values: ' . implode(', ', $field_values));
             }
         }
-
-        return $schema;
     }
 
 
