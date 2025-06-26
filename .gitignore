@@ -46,3 +46,6 @@ build/
 *.bak
 *.backup
 *.old
+
+# Legacy code
+legacy/
